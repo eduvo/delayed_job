@@ -130,6 +130,7 @@ module Delayed
 
     def start # rubocop:disable CyclomaticComplexity, PerceivedComplexity
       trap('TERM') do
+        $0 += " (dead since #{Time.now.to_i})"
         Thread.new { say 'Exiting...' }
         stop
         raise SignalException, 'TERM' if self.class.raise_signal_exceptions
