@@ -19,7 +19,7 @@ module Delayed
       @options = {
         :quiet => true,
         :pid_dir => "#{root}/tmp/pids",
-        :log_dir => "#{root}/log"
+        :log_dir => "#{root}/log/dj_process_logs"
       }
 
       @worker_count = 1
@@ -87,6 +87,7 @@ module Delayed
     def daemonize # rubocop:disable PerceivedComplexity
       dir = @options[:pid_dir]
       FileUtils.mkdir_p(dir) unless File.exist?(dir)
+      FileUtils.mkdir_p(@options[:log_dir]) unless File.exist?(@options[:log_dir])
 
       if worker_pools
         setup_pools
@@ -120,7 +121,7 @@ module Delayed
 
     def run_process(process_name, options = {})
       Delayed::Worker.before_fork
-      Daemons.run_proc(process_name, :log_output => true, :dir => options[:pid_dir], :dir_mode => :normal, :no_wait => true, :monitor => @monitor, :ARGV => @args) do |*_args|
+      Daemons.run_proc(process_name, :log_output => true, :dir => options[:pid_dir], :log_dir => options[:log_dir], :dir_mode => :normal, :no_wait => true, :monitor => @monitor, :ARGV => @args) do |*_args|
         $0 = File.join(options[:prefix], process_name) if @options[:prefix]
         run process_name, options
       end
